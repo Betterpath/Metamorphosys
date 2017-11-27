@@ -16,8 +16,7 @@ function docker-build () {
 }
 
 function docker-run () {
-    docker run -v $(pwd)/METASUBSET/2017AA:/code \
-           -p 3306:3306 --name $NAME betterpath/metamorphosys
+    docker run -p 3306:3306 --name $NAME -itd betterpath/metamorphosys
 }
 
 function bootstrap () {

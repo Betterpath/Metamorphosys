@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+set -x
+
+NAME=umls
+COMPOSE_PROJECT_NAME=metamorphosys
+
+function usage() {
+    echo "Usage: ./deployment/bin/compose [build | run | up | populate | deploy | bootstrap <host>]"
+}
+
+function docker-build () {
+    docker rm -f $NAME | echo "Skipping..."
+    docker build . -t betterpath/metamorphosys --build-arg S3_KEY=$S3_KEY
+}
+
+function docker-run () {
+    docker run -v $(pwd)/METASUBSET/2017AA:/code \
+           -p 3306:3306 --name $NAME betterpath/metamorphosys
+}
+
+function bootstrap () {
+    HOST=ec2-user@$1
+
+    ssh $HOST "sudo yum update -y"
+    ssh $HOST "sudo mkdir -p /code/$COMPOSE_PROJECT_NAME /mnt/docker/$COMPOSE_PROJECT_NAME"
+    ssh $HOST "sudo chown -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
+    ssh $HOST "sudo chgrp -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
+    ssh $HOST "sudo yum install -y docker"
+    ssh $HOST "sudo pip install docker-compose"
+    ssh $HOST "sudo service docker start"
+    ssh $HOST "sudo usermod -a -G docker $USER"
+}
+
+function deploy () {
+    HOST=ec2-user@$1
+
+    scp . $HOST:/code/$COMPOSE_PROJECT_NAME
+
+    ssh $HOST "cd /code/$COMPOSE_PROJECT_NAME && nohup ./deployment/bin/compose up"
+    ssh $HOST "cd /code/$COMPOSE_PROJECT_NAME && nohup ./deployment/bin/compose populate &"
+}
+
+case "$1" in
+    "bootstrap")
+        bootstrap "$2"
+        ;;
+    "build")
+        docker-build
+        ;;
+    "run")
+        docker-run
+        ;;
+    "up")
+        docker-build
+        docker-run
+        ;;
+    "populate")
+        docker exec -it $NAME bash -c "cd /code/META && ./populate_mysql_db.sh"
+        ;;
+    "deploy")
+        deploy "$2"
+        ;;
+    *)
+        usage
+        ;;
+esac

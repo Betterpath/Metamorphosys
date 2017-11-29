@@ -4,6 +4,7 @@ set -e
 set -x
 
 NAME=umls
+TAG=betterpath/metamorphosys
 COMPOSE_PROJECT_NAME=metamorphosys
 
 function usage() {
@@ -11,12 +12,13 @@ function usage() {
 }
 
 function docker-build () {
+    source .env
     docker rm -f $NAME | echo "Skipping..."
-    docker build . -t betterpath/metamorphosys --build-arg S3_KEY=$S3_KEY
+    docker build . -t $TAG --build-arg S3_KEY=$S3_KEY --build-arg S3_SECRET=$S3_SECRET
 }
 
 function docker-run () {
-    docker run -p 3306:3306 --name $NAME -itd betterpath/metamorphosys
+    docker run -p 3306:3306 --name $NAME -itd $TAG
 }
 
 function bootstrap () {
@@ -27,7 +29,6 @@ function bootstrap () {
     ssh $HOST "sudo chown -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
     ssh $HOST "sudo chgrp -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
     ssh $HOST "sudo yum install -y docker"
-    ssh $HOST "sudo pip install docker-compose"
     ssh $HOST "sudo service docker start"
     ssh $HOST "sudo usermod -a -G docker $USER"
 }
@@ -42,9 +43,6 @@ function deploy () {
 }
 
 case "$1" in
-    "bootstrap")
-        bootstrap "$2"
-        ;;
     "build")
         docker-build
         ;;
@@ -57,6 +55,9 @@ case "$1" in
         ;;
     "populate")
         docker exec -it $NAME bash -c "cd /code/META && ./populate_mysql_db.sh"
+        ;;
+    "bootstrap")
+        bootstrap "$2"
         ;;
     "deploy")
         deploy "$2"

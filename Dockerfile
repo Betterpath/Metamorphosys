@@ -14,6 +14,5 @@ RUN apt-get update && apt-get install -y openssl curl
 ADD download.sh /download.sh
 RUN /download.sh
 RUN tar xfj 2017AA-active-metasubset.tar.bz2
-RUN ls
 RUN mkdir /code
 CMD tail -f /dev/null

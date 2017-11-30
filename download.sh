@@ -58,6 +58,6 @@ s3simple() {
 }
 
 BUCKET="betterpath-code"
-FILE="public_mm_linux_main_2016v2.tar.bz2"
+FILE="2017AA-active-metasubset.tar.bz2"
 
 s3simple get s3://$BUCKET/$FILE $FILE

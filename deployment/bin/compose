@@ -26,11 +26,11 @@ function bootstrap () {
 
     ssh $HOST "sudo yum update -y"
     ssh $HOST "sudo mkdir -p /code/$COMPOSE_PROJECT_NAME /mnt/docker/$COMPOSE_PROJECT_NAME"
-    ssh $HOST "sudo chown -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
-    ssh $HOST "sudo chgrp -R $USER /code /mnt/docker/$COMPOSE_PROJECT_NAME"
+    ssh $HOST "sudo chown -R ec2-user /code /mnt/docker/$COMPOSE_PROJECT_NAME"
+    ssh $HOST "sudo chgrp -R ec2-user /code /mnt/docker/$COMPOSE_PROJECT_NAME"
     ssh $HOST "sudo yum install -y docker"
     ssh $HOST "sudo service docker start"
-    ssh $HOST "sudo usermod -a -G docker $USER"
+    ssh $HOST "sudo usermod -a -G docker ec2-user"
 }
 
 function deploy () {
@@ -54,7 +54,7 @@ case "$1" in
         docker-run
         ;;
     "populate")
-        docker exec -it $NAME bash -c "cd /code/META && ./populate_mysql_db.sh"
+        docker exec -it $NAME bash -c "cd /root/METASUBSET/2017AA/META && ./populate_mysql_db.sh"
         ;;
     "bootstrap")
         bootstrap "$2"

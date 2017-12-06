@@ -14,5 +14,4 @@ RUN apt-get update && apt-get install -y openssl curl bzip2 tar
 ADD download.sh /download.sh
 RUN /download.sh
 RUN tar xf 2017AA-active-metasubset.tar.bz2
-RUN mkdir /code
-CMD tail -f /dev/null
+WORKDIR /root/METASUBSET/2017AA

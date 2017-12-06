@@ -36,7 +36,7 @@ function bootstrap () {
 function deploy () {
     HOST=ec2-user@$1
 
-    scp . $HOST:/code/$COMPOSE_PROJECT_NAME
+    rsync -avqz --exclude '.git' . $HOST:/code/$COMPOSE_PROJECT_NAME
 
     ssh $HOST "cd /code/$COMPOSE_PROJECT_NAME && nohup ./deployment/bin/compose up"
     ssh $HOST "cd /code/$COMPOSE_PROJECT_NAME && nohup ./deployment/bin/compose populate &"
